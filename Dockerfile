@@ -11,6 +11,7 @@ RUN apt-get update && \
     g++-$GNU_HOST \
     git \
     gnupg \
+    libc6-dev-armhf-cross \
     libssl-dev \
     libtool \
     pkg-config \
