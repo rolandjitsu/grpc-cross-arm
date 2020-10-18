@@ -17,6 +17,8 @@ jobs:
             g++-arm-linux-gnueabihf \
             libstdc++-6-dev-armhf-cross \
             qemu-user
+          ls -lah /usr/lib/arm-linux-gnueabihf
+          # strings /usr/lib/arm-linux-gnueabihf/libstdc++.so.6 | grep GLIB
       - name: Enable experimental features for the Docker CLI
         run: |
           mkdir -p ~/.docker
