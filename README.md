@@ -9,21 +9,10 @@ Install the following tools:
 * [buildx](https://github.com/docker/buildx#installing) >= `v0.4.1`
 
 ## Setup Docker
-Check current builder instances:
+Create a builder:
 ```bash
-docker buildx ls
+docker buildx create --name my-builder --driver docker-container --use
 ```
-
-If you see an instance that uses the `docker` driver, switch to it (it's usually the `default`):
-```
-docker buildx use <instance name>
-```
-
-Otherwise, create a builder:
-```bash
-docker buildx create --name my-builder --driver docker --use
-```
-**NOTE**: You cannot create more than one instance using the `docker` driver.
 
 Then inspect and bootstrap it:
 ```bash

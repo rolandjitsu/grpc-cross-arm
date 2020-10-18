@@ -19,9 +19,24 @@ jobs:
           sudo service docker restart
           docker version -f '{{.Client.Experimental}}'
           docker buildx version
+      - name: Setup a Docker builder
+        run: |
+          docker buildx create --name grpc --driver docker-container --use
+          docker buildx inspect --bootstrap
       - uses: actions/checkout@v2
+      # https://docs.github.com/en/free-pro-team@latest/actions/guides/caching-dependencies-to-speed-up-workflows
+      - name: Cache Docker
+        uses: actions/cache@v2
+        env:
+          cache-name: docker-cache
+        with:
+          path: /tmp/cache
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('src/*', 'Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-
+            ${{ runner.os }}-
       - name: Compile the binaries
-        run: docker buildx bake
+        run: CACHE=/tmp/cache docker buildx bake
       - name: Verify the binaries
         run: |
           unset LD_LIBRARY_PATH
