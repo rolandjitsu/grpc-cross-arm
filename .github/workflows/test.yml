@@ -11,7 +11,12 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: Setup deps
-        run: sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf qemu-user
+        run: |
+          sudo apt-get install -y gcc-arm-linux-gnueabihf \
+            libc6-dev-armhf-cross \
+            g++-arm-linux-gnueabihf \
+            libstdc++-6-dev-armhf-cross \
+            qemu-user
       - name: Enable experimental features for the Docker CLI
         run: |
           mkdir -p ~/.docker
