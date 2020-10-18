@@ -1,0 +1,38 @@
+name: Test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Setup deps
+        run: sudo apt-get install -y gcc-arm-linux-gnueabi qemu-user
+      - name: Enable experimental features for the Docker CLI
+        run: |
+          mkdir -p ~/.docker
+          echo $'{\n  "experimental": "enabled"\n}' | sudo tee ~/.docker/config.json
+          sudo service docker restart
+          docker version -f '{{.Client.Experimental}}'
+          docker buildx version
+      - uses: actions/checkout@v2
+      - name: Compile the binaries
+        run: docker buildx bake
+      - name: Verify the binaries
+        run: |
+          unset LD_LIBRARY_PATH
+
+          qemu-arm -L /usr/arm-linux-gnueabi/ ./bin/hello_server &
+          pid=$!
+
+          trap 'kill $pid' EXIT
+
+          out=$(qemu-arm -L /usr/arm-linux-gnueabi/ ./bin/hello_server John)
+          if [ "$out" != "Hello, John!" ]; then
+            echo "Binary output is not ok"
+            exit 1
+          fi

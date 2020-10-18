@@ -1,0 +1,31 @@
+# See https://github.com/github/gitignore
+
+# macOS/OS X
+## General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Icon must end with two \r
+Icon
+
+## Thumbnails
+._*
+
+# VSC
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Direnv https://direnv.net/
+.envrc
+
+# Binaries
+bin/*
+!bin/.gitkeep
+
+# Cache
+tmp
