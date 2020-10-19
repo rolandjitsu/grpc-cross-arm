@@ -12,13 +12,10 @@ jobs:
     steps:
       - name: Setup deps
         run: |
-          # TODO: Do we need libc6-dev-armhf-cross and g++-arm-linux-gnueabihf?
           sudo apt-get update && \
           sudo apt-get install -y gcc-arm-linux-gnueabihf \
             libc6-dev-armhf-cross \
-            g++-arm-linux-gnueabihf \
             qemu-user
-          # libstdc++-10-dev-armhf-cross
       - name: Enable experimental features for the Docker CLI
         run: |
           mkdir -p ~/.docker
@@ -45,8 +42,7 @@ jobs:
             ${{ runner.os }}-
       - name: Compile the binaries
         run: CACHE=/tmp/cache docker buildx bake
-      # TODO: Cannot run binaries due to different versions of glibc: ubuntu 18.04 seems at 2.7 and debian at 2.8.
-      # Let's try 20.04 as it's at 2.31.
+      # NOTE: Cannot run the binaries if there's different versions of glibc; for Debian Buster we need at least Ubuntu 20.04.
       # https://packages.ubuntu.com/bionic/libc6-dev-armhf-cross
       # https://packages.debian.org/buster/libc6-dev-armhf-cross
       - name: Verify the binaries
@@ -54,14 +50,10 @@ jobs:
           unset LD_LIBRARY_PATH
 
           qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_server &
-          pid=$!
+          sleep 1
 
-          # trap 'kill $pid' EXIT
-          sleep 5
-
-          out=$(qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_client John)
-          echo $out
-          # if [ "$out" != "Hello, John!" ]; then
-          #   echo "Binary output is not ok"
-          #   exit 1
-          # fi
+          if ! qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_client John \
+            | grep -q "Hello, John!" ; then
+            echo "Binary output is not ok"
+            exit 1
+          fi
