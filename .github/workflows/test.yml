@@ -28,7 +28,6 @@ jobs:
           docker buildx create --name grpc --driver docker-container --use
           docker buildx inspect --bootstrap
       - uses: actions/checkout@v2
-      # TODO: Caching doesn't seem to work :(
       # https://docs.github.com/en/free-pro-team@latest/actions/guides/caching-dependencies-to-speed-up-workflows
       - name: Cache Docker
         uses: actions/cache@v2
@@ -42,7 +41,7 @@ jobs:
             ${{ runner.os }}-
       - name: Compile the binaries
         run: CACHE=/tmp/cache docker buildx bake
-      # NOTE: Cannot run the binaries if there's different versions of glibc; for Debian Buster we need at least Ubuntu 20.04.
+      # NOTE: Cannot run the binaries if there's different versions of glibc; for Debian Buster images we need at least Ubuntu 20.04.
       # https://packages.ubuntu.com/bionic/libc6-dev-armhf-cross
       # https://packages.debian.org/buster/libc6-dev-armhf-cross
       - name: Verify the binaries
@@ -52,8 +51,10 @@ jobs:
           qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_server &
           sleep 1
 
-          if ! qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_client John \
-            | grep -q "Hello, John!" ; then
+          out=$(qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_client John)
+
+          if ! echo "$out" | grep -q "Hello, John!" ; then
             echo "Binary output is not ok"
+            echo "$out"
             exit 1
           fi
