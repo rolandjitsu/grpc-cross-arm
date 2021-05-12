@@ -24,23 +24,13 @@ ENV CXX_COMPILER_ARM_LINUX=$GNU_HOST-g++
 
 ENV CROSS_TOOLCHAIN=/usr/$GNU_HOST
 ENV CROSS_STAGING_PREFIX=$CROSS_TOOLCHAIN/stage
-ENV CMAKE_CROSS_TOOLCHAIN=/arm.toolchain.cmake
+ENV CMAKE_CROSS_TOOLCHAIN=$HOME/arm.toolchain.cmake
 
-# https://cmake.org/cmake/help/v3.13/manual/cmake-toolchains.7.html#cross-compiling-for-linux
-RUN echo "set(CMAKE_SYSTEM_NAME Linux)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_SYSTEM_PROCESSOR arm)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_STAGING_PREFIX $CROSS_STAGING_PREFIX)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_SYSROOT ${CROSS_TOOLCHAIN}/sysroot)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_C_COMPILER /usr/bin/$C_COMPILER_ARM_LINUX)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_CXX_COMPILER /usr/bin/$CXX_COMPILER_ARM_LINUX)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)" >> $CMAKE_CROSS_TOOLCHAIN && \
-  echo "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)" >> $CMAKE_CROSS_TOOLCHAIN
+COPY ./arm.toolchain.cmake $HOME/arm.toolchain.cmake
 
-ENV GRPC_VERSION=v1.32.0
+ENV GRPC_VERSION=v1.37.1
 
-# https://github.com/grpc/grpc/blob/master/test/distrib/cpp/run_distrib_test_raspberry_pi.sh
+# https://github.com/grpc/grpc/blob/v1.37.1/test/distrib/cpp/run_distrib_test_cmake_aarch64_cross.sh
 RUN GRPC_DIR=/grpc && \
   git clone --depth 1 --branch $GRPC_VERSION --recursive --shallow-submodules https://github.com/grpc/grpc.git $GRPC_DIR && \
   # gRPC on the host
@@ -54,15 +44,33 @@ RUN GRPC_DIR=/grpc && \
     -DgRPC_SSL_PROVIDER=package \
     ../.. && \
   make -j`nproc` install && \
+  # Abseil on the host
+  ABSEIL_BUILD_DIR=$GRPC_DIR/third_party/abseil-cpp/cmake/build && \
+  mkdir -p $ABSEIL_BUILD_DIR && \
+  cd $ABSEIL_BUILD_DIR && \
+  cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
+    ../.. && \
+  make -j`nproc` install && \
   # gRPC cross
   GRPC_CROSS_BUILD_DIR=$GRPC_DIR/cmake/cross_build && \
   mkdir -p $GRPC_CROSS_BUILD_DIR && \
   cd $GRPC_CROSS_BUILD_DIR && \
   cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$CROSS_TOOLCHAIN/grpc_install \
+    -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
     ../.. && \
   make -j`nproc` install && \
+  # Abseil cross
+  ABSEIL_BUILD_DIR=$GRPC_DIR/third_party/abseil-cpp/cmake/build_cross && \
+  mkdir -p $ABSEIL_BUILD_DIR && \
+  cd $ABSEIL_BUILD_DIR && \
+  cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
+    ../.. && \
+  make -j$(nproc) install  && \
   cd / && \
   rm -rf $GRPC_DIR
 
