@@ -1,17 +1,22 @@
-FROM debian:buster AS cross-grpc
+ARG DEBIAN_VERSION=bullseye-slim
+FROM debian:${DEBIAN_VERSION} AS cross-grpc
 
-ENV GNU_HOST=arm-linux-gnueabihf
+ARG GNU_HOST=arm-linux-gnueabihf
+ENV GNU_HOST=${GNU_HOST}
 
 RUN apt-get update && \
-  apt-get --no-install-recommends install -y autoconf \
+  apt-get --no-install-recommends install -y \
+    autoconf \
     automake \
     build-essential \
+    ca-certificates \
     cmake \
     gcc-$GNU_HOST \
     g++-$GNU_HOST \
     git \
     gnupg \
     libc6-dev-armhf-cross \
+    libc6-dev-arm64-cross \
     libssl-dev \
     libtool \
     pkg-config \
@@ -24,13 +29,14 @@ ENV CXX_COMPILER_ARM_LINUX=$GNU_HOST-g++
 
 ENV CROSS_TOOLCHAIN=/usr/$GNU_HOST
 ENV CROSS_STAGING_PREFIX=$CROSS_TOOLCHAIN/stage
-ENV CMAKE_CROSS_TOOLCHAIN=$HOME/arm.toolchain.cmake
+ENV CMAKE_CROSS_TOOLCHAIN=/usr/local/share/cmake/arm.toolchain.cmake
 
-COPY ./arm.toolchain.cmake $HOME/arm.toolchain.cmake
+COPY ./arm.toolchain.cmake /usr/local/share/cmake/arm.toolchain.cmake
 
-ENV GRPC_VERSION=v1.37.1
+ARG GRPC_VERSION=v1.37.1
+ENV GRPC_VERSION=${GRPC_VERSION}
 
-# https://github.com/grpc/grpc/blob/v1.37.1/test/distrib/cpp/run_distrib_test_cmake_aarch64_cross.sh
+# https://github.com/grpc/grpc/blob/master/test/distrib/cpp/run_distrib_test_cmake_aarch64_cross.sh
 RUN GRPC_DIR=/grpc && \
   git clone --depth 1 --branch $GRPC_VERSION --recursive --shallow-submodules https://github.com/grpc/grpc.git $GRPC_DIR && \
   # gRPC on the host
@@ -70,7 +76,7 @@ RUN GRPC_DIR=/grpc && \
     -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
     -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
     ../.. && \
-  make -j$(nproc) install  && \
+  make -j$(nproc) install && \
   cd / && \
   rm -rf $GRPC_DIR
 
@@ -90,7 +96,7 @@ RUN mkdir -p $BIN_DIR && \
     -DCMAKE_BUILD_TYPE=Release \
     -DProtobuf_DIR=$CROSS_STAGING_PREFIX/lib/cmake/protobuf \
     -DgRPC_DIR=$CROSS_STAGING_PREFIX/lib/cmake/grpc \
-    ..  && \
+    .. && \
   make -j`nproc` && \
   cp ./hello_* $BIN_DIR/
 
