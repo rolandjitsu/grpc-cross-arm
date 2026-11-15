@@ -6,6 +6,10 @@ variable "CACHE" {
   default = "./tmp/cache"
 }
 
+variable "GNU_HOST" {
+  default = "arm-linux-gnueabihf"
+}
+
 variable "DEBIAN_VERSION" {
   default = "bookworm-slim"
 }
@@ -32,7 +36,7 @@ target "default" {
   cache-to   = ["type=local,mode=max,dest=${CACHE}"]
   output     = ["${DEST}"]
   args = {
-    GNU_HOST       = "arm-linux-gnueabihf"
+    GNU_HOST       = "${GNU_HOST}"
     DEBIAN_VERSION = "${DEBIAN_VERSION}"
     GRPC_VERSION   = "${GRPC_VERSION}"
   }

@@ -12,20 +12,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
+        version:
           - name: latest
             debian_version: bookworm-slim
             grpc_version: v1.66.2
           - name: legacy
             debian_version: bullseye-slim
             grpc_version: v1.37.1
-    name: test (${{ matrix.name }})
+        arch:
+          - name: armhf
+            gnu_host: arm-linux-gnueabihf
+            qemu_arch: arm
+            sysroot_pkg: libc6-dev-armhf-cross
+          - name: aarch64
+            gnu_host: aarch64-linux-gnu
+            qemu_arch: aarch64
+            sysroot_pkg: libc6-dev-arm64-cross
+    name: test (${{ matrix.version.name }}, ${{ matrix.arch.name }})
     steps:
       - name: Setup deps
         run: |
           sudo apt-get update && \
-          sudo apt-get install -y gcc-arm-linux-gnueabihf \
-            libc6-dev-armhf-cross \
+          sudo apt-get install -y \
+            gcc-${{ matrix.arch.gnu_host }} \
+            ${{ matrix.arch.sysroot_pkg }} \
             qemu-user
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,16 +50,18 @@ jobs:
           cache-name: docker-cache
         with:
           path: /tmp/cache
-          key: ${{ runner.os }}-${{ matrix.name }}-${{ env.cache-name }}-${{ hashFiles('src/*', 'Dockerfile') }}
+          key: ${{ runner.os }}-${{ matrix.version.name }}-${{ matrix.arch.name }}-${{ env.cache-name }}-${{ hashFiles('src/*', 'Dockerfile') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.name }}-${{ env.cache-name }}-
-            ${{ runner.os }}-${{ matrix.name }}-
+            ${{ runner.os }}-${{ matrix.version.name }}-${{ matrix.arch.name }}-${{ env.cache-name }}-
+            ${{ runner.os }}-${{ matrix.version.name }}-${{ matrix.arch.name }}-
+            ${{ runner.os }}-${{ matrix.version.name }}-
 
       - name: Compile the binaries
         env:
           BUILDX_BAKE_ENTITLEMENTS_FS: "0"
-          DEBIAN_VERSION: ${{ matrix.debian_version }}
-          GRPC_VERSION: ${{ matrix.grpc_version }}
+          GNU_HOST: ${{ matrix.arch.gnu_host }}
+          DEBIAN_VERSION: ${{ matrix.version.debian_version }}
+          GRPC_VERSION: ${{ matrix.version.grpc_version }}
           CACHE: /tmp/cache
         run: docker buildx bake --allow=fs=/tmp
 
@@ -58,11 +70,11 @@ jobs:
         run: |
           unset LD_LIBRARY_PATH
 
-          qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_server &
+          qemu-${{ matrix.arch.qemu_arch }} -L /usr/${{ matrix.arch.gnu_host }}/ ./bin/hello_server &
           SERVER_PID=$!
           sleep 1
 
-          out=$(qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_client John)
+          out=$(qemu-${{ matrix.arch.qemu_arch }} -L /usr/${{ matrix.arch.gnu_host }}/ ./bin/hello_client John)
           kill $SERVER_PID 2>/dev/null || true
 
           if ! echo "$out" | grep -q "Hello, John!" ; then
