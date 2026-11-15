@@ -1,4 +1,4 @@
-ARG DEBIAN_VERSION=bullseye-slim
+ARG DEBIAN_VERSION=bookworm-slim
 FROM debian:${DEBIAN_VERSION} AS cross-grpc
 
 ARG GNU_HOST=arm-linux-gnueabihf
@@ -38,7 +38,7 @@ ENV CMAKE_CROSS_TOOLCHAIN=/usr/local/share/cmake/arm.toolchain.cmake
 
 COPY ./arm.toolchain.cmake /usr/local/share/cmake/arm.toolchain.cmake
 
-ARG GRPC_VERSION=v1.37.1
+ARG GRPC_VERSION=v1.66.2
 ENV GRPC_VERSION=${GRPC_VERSION}
 
 # https://github.com/grpc/grpc/blob/master/test/distrib/cpp/run_distrib_test_cmake_aarch64_cross.sh
@@ -50,17 +50,10 @@ RUN GRPC_DIR=/grpc && \
   cd $GRPC_BUILD_DIR && \
   cmake \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=17 \
     -DgRPC_INSTALL=ON \
     -DgRPC_BUILD_TESTS=OFF \
     -DgRPC_SSL_PROVIDER=package \
-    ../.. && \
-  make -j`nproc` install && \
-  # Abseil on the host
-  ABSEIL_BUILD_DIR=$GRPC_DIR/third_party/abseil-cpp/cmake/build && \
-  mkdir -p $ABSEIL_BUILD_DIR && \
-  cd $ABSEIL_BUILD_DIR && \
-  cmake -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
     ../.. && \
   make -j`nproc` install && \
   # gRPC cross
@@ -69,19 +62,12 @@ RUN GRPC_DIR=/grpc && \
   cd $GRPC_CROSS_BUILD_DIR && \
   cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=17 \
     -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
+    -DgRPC_INSTALL=ON \
+    -DgRPC_BUILD_TESTS=OFF \
     ../.. && \
   make -j`nproc` install && \
-  # Abseil cross
-  ABSEIL_BUILD_DIR=$GRPC_DIR/third_party/abseil-cpp/cmake/build_cross && \
-  mkdir -p $ABSEIL_BUILD_DIR && \
-  cd $ABSEIL_BUILD_DIR && \
-  cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
-    ../.. && \
-  make -j$(nproc) install && \
   cd / && \
   rm -rf $GRPC_DIR
 
@@ -99,7 +85,10 @@ RUN mkdir -p $BIN_DIR && \
   cd ./$BUILD_DIR && \
   cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH=$CROSS_STAGING_PREFIX \
+    -Dabsl_DIR=$CROSS_STAGING_PREFIX/lib/cmake/absl \
     -DProtobuf_DIR=$CROSS_STAGING_PREFIX/lib/cmake/protobuf \
+    -Dutf8_range_DIR=$CROSS_STAGING_PREFIX/lib/cmake/utf8_range \
     -DgRPC_DIR=$CROSS_STAGING_PREFIX/lib/cmake/grpc \
     .. && \
   make -j`nproc` && \
