@@ -112,6 +112,8 @@ RUN mkdir -p $BIN_DIR && \
     -DProtobuf_DIR=$CROSS_STAGING_PREFIX/lib/cmake/protobuf \
     -Dutf8_range_DIR=$CROSS_STAGING_PREFIX/lib/cmake/utf8_range \
     -DgRPC_DIR=$CROSS_STAGING_PREFIX/lib/cmake/grpc \
+    -D_PROTOBUF_PROTOC=/usr/local/bin/protoc \
+    -D_GRPC_CPP_PLUGIN_EXECUTABLE=/usr/local/bin/grpc_cpp_plugin \
     .. && \
   make -j`nproc` && \
   cp ./hello_* $BIN_DIR/

@@ -20,7 +20,10 @@ message(STATUS "Using protobuf ${Protobuf_VERSION}")
 
 set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
 set(_REFLECTION gRPC::grpc++_reflection)
-find_program(_PROTOBUF_PROTOC protoc)
+find_program(_PROTOBUF_PROTOC protoc NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
+if(NOT _PROTOBUF_PROTOC)
+  find_program(_PROTOBUF_PROTOC protoc)
+endif()
 
 # Find gRPC installation
 # Looks for gRPCConfig.cmake file installed by gRPC's cmake installation.
@@ -28,7 +31,10 @@ find_package(gRPC CONFIG REQUIRED)
 message(STATUS "Using gRPC ${gRPC_VERSION}")
 
 set(_GRPC_GRPCPP gRPC::grpc++)
-find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
+find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
+if(NOT _GRPC_CPP_PLUGIN_EXECUTABLE)
+  find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
+endif()
 
 # Protos
 get_filename_component(h_proto "hello.proto" ABSOLUTE)
