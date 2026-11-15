@@ -11,15 +11,11 @@ else()
   set(CMAKE_SYSTEM_PROCESSOR arm)
 endif()
 
-# Sysroot configuration
+# Sysroot configuration (Debian/Ubuntu cross-compilers have built-in sysroots; only set if an external sysroot exists)
 if(DEFINED ENV{CMAKE_SYSROOT})
   set(CMAKE_SYSROOT $ENV{CMAKE_SYSROOT})
-elseif(DEFINED ENV{CROSS_TOOLCHAIN})
-  if(EXISTS "$ENV{CROSS_TOOLCHAIN}/sysroot")
-    set(CMAKE_SYSROOT $ENV{CROSS_TOOLCHAIN}/sysroot)
-  else()
-    set(CMAKE_SYSROOT $ENV{CROSS_TOOLCHAIN})
-  endif()
+elseif(DEFINED ENV{CROSS_TOOLCHAIN} AND EXISTS "$ENV{CROSS_TOOLCHAIN}/sysroot")
+  set(CMAKE_SYSROOT $ENV{CROSS_TOOLCHAIN}/sysroot)
 endif()
 
 # Staging Prefix
