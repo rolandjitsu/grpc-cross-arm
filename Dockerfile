@@ -1,14 +1,18 @@
+# syntax=docker/dockerfile:1
 ARG DEBIAN_VERSION=bookworm-slim
 FROM debian:${DEBIAN_VERSION} AS cross-grpc
 
 ARG GNU_HOST=arm-linux-gnueabihf
 ENV GNU_HOST=${GNU_HOST}
 
-RUN if grep -qE "bullseye|buster" /etc/os-release 2>/dev/null; then \
-      sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
-      sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
-      echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99archive; \
-    fi && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  rm -f /etc/apt/apt.conf.d/docker-clean && \
+  if grep -qE "bullseye|buster" /etc/os-release 2>/dev/null; then \
+    sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
+    sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99archive; \
+  fi && \
   apt-get update && \
   apt-get --no-install-recommends install -y \
     autoconf \
@@ -26,8 +30,7 @@ RUN if grep -qE "bullseye|buster" /etc/os-release 2>/dev/null; then \
     libtool \
     pkg-config \
     software-properties-common \
-    wget && \
-  rm -rf /var/lib/apt/lists/*
+    wget
 
 ENV C_COMPILER_ARM_LINUX=$GNU_HOST-gcc
 ENV CXX_COMPILER_ARM_LINUX=$GNU_HOST-g++
