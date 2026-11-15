@@ -34,6 +34,7 @@ The repository compiles a simple client-server Greeter application defined in [s
 │   └── .gitkeep
 ├── docker-bake.hcl            # Docker Buildx Bake configuration
 ├── Dockerfile                 # Multi-stage Docker build definition
+├── dprint.json                # dprint formatting configuration (Markdown, JSON)
 ├── LICENSE                    # MIT License
 ├── README.md                  # Human-facing project documentation
 └── src/
@@ -131,6 +132,8 @@ kill $SERVER_PID 2>/dev/null || true
 
 - **ClangFormat**: Google C++ style, 2-space indentation (see `.clang-format`).
 - **EditorConfig**: 2-space indentation, trimmed trailing whitespace, newline at EOF (see `.editorconfig`).
+- **dprint**: Formatter for Markdown and JSON (see `dprint.json`).
+- **typos**: Source code spell checker running in CI.
 - **CMake**: Target-oriented CMake. Use `target_link_libraries`, `target_include_directories`, and `set(CMAKE_CXX_STANDARD 17)` rather than manually manipulating compiler flag strings.
 - **C++**: Modern C++ (C++17). Follow standard C++ naming and RAII resource management.
 - **Git Hygiene & Commits**:
