@@ -1,12 +1,11 @@
 #include <ctype.h>
+#include <grpcpp/grpcpp.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <iostream>
 #include <memory>
 #include <string>
-
-#include <grpcpp/grpcpp.h>
 
 #include "hello.grpc.pb.h"
 
