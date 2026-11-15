@@ -4,7 +4,12 @@ FROM debian:${DEBIAN_VERSION} AS cross-grpc
 ARG GNU_HOST=arm-linux-gnueabihf
 ENV GNU_HOST=${GNU_HOST}
 
-RUN apt-get update && \
+RUN if grep -qE "bullseye|buster" /etc/os-release 2>/dev/null; then \
+      sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
+      sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
+      echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99archive; \
+    fi && \
+  apt-get update && \
   apt-get --no-install-recommends install -y \
     autoconf \
     automake \
