@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.16)
 
 # For Protobuf's cmake warnings
 if(POLICY CMP0077)
@@ -6,7 +6,9 @@ if(POLICY CMP0077)
 endif()
 
 project(hello C CXX)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Threads REQUIRED)
 
@@ -51,8 +53,7 @@ add_custom_command(
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Targets (the binaries)
-foreach(_target
-  hello_client hello_server)
+foreach(_target hello_client hello_server)
   add_executable(${_target} "${_target}.cc"
     ${h_proto_srcs}
     ${h_grpc_srcs})
