@@ -2,7 +2,7 @@
 
 > Cross compile gRPC for ARM with Docker.
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/rolandjitsu/grpc-cross-arm/test.yml?branch=master&label=tests&style=flat-square)](https://github.com/rolandjitsu/grpc-cross-arm/actions?query=workflow%3ATest)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/rolandjitsu/grpc-cross-arm/test.yml?branch=main&label=tests&style=flat-square)](https://github.com/rolandjitsu/grpc-cross-arm/actions?query=workflow%3ATest)
 
 ## Overview
 
