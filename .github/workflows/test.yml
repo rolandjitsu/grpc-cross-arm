@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Setup deps
         run: |
@@ -16,21 +16,15 @@ jobs:
           sudo apt-get install -y gcc-arm-linux-gnueabihf \
             libc6-dev-armhf-cross \
             qemu-user
-      - name: Enable experimental features for the Docker CLI
-        run: |
-          mkdir -p ~/.docker
-          echo $'{\n  "experimental": "enabled"\n}' | sudo tee ~/.docker/config.json
-          sudo service docker restart
-          docker version -f '{{.Client.Experimental}}'
-          docker buildx version
-      - name: Setup a Docker builder
-        run: |
-          docker buildx create --name grpc --driver docker-container --use
-          docker buildx inspect --bootstrap
-      - uses: actions/checkout@v2
-      # https://docs.github.com/en/free-pro-team@latest/actions/guides/caching-dependencies-to-speed-up-workflows
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows
       - name: Cache Docker
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         env:
           cache-name: docker-cache
         with:
@@ -39,19 +33,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-
             ${{ runner.os }}-
+
       - name: Compile the binaries
         run: CACHE=/tmp/cache docker buildx bake
-      # NOTE: Cannot run the binaries if there's different versions of glibc; for Debian Buster images we need at least Ubuntu 20.04.
-      # https://packages.ubuntu.com/bionic/libc6-dev-armhf-cross
-      # https://packages.debian.org/buster/libc6-dev-armhf-cross
+
+      # NOTE: Target binaries require target glibc <= runner sysroot glibc.
       - name: Verify the binaries
         run: |
           unset LD_LIBRARY_PATH
 
           qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_server &
+          SERVER_PID=$!
           sleep 1
 
           out=$(qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_client John)
+          kill $SERVER_PID 2>/dev/null || true
 
           if ! echo "$out" | grep -q "Hello, John!" ; then
             echo "Binary output is not ok"
