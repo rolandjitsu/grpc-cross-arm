@@ -48,6 +48,27 @@ docker buildx bake aarch64
 docker buildx bake all
 ```
 
+## Building with Podman & Buildah
+You can also compile without Docker using [Podman](https://podman.io/) or [Buildah](https://buildah.io/) (which automatically picks up [Containerfile](file:///Users/roland.groza/Work/grpc-cross-arm/Containerfile)):
+
+### Podman
+```bash
+# Default build (32-bit ARM, output to ./bin)
+podman build -o type=local,dest=./bin .
+
+# Target 64-bit ARM (output to ./bin/aarch64)
+podman build --build-arg GNU_HOST=aarch64-linux-gnu -o type=local,dest=./bin/aarch64 .
+```
+
+### Buildah
+```bash
+# Default build (32-bit ARM, output to ./bin)
+buildah build --output type=local,dest=./bin .
+
+# Target 64-bit ARM (output to ./bin/aarch64)
+buildah build --build-arg GNU_HOST=aarch64-linux-gnu --output type=local,dest=./bin/aarch64 .
+```
+
 ## Learning Material
 * [Docker Buildx](https://docs.docker.com/buildx/working-with-buildx/)
 * [Getting started with Docker for ARM on Linux](https://www.docker.com/blog/getting-started-with-docker-for-arm-on-linux/)

@@ -82,6 +82,19 @@ docker buildx build -f Dockerfile -o type=local,dest=./bin .
 docker buildx build --no-cache -f Dockerfile -o type=local,dest=./bin .
 ```
 
+### Building with Podman or Buildah
+Podman and Buildah use [Containerfile](file:///Users/roland.groza/Work/grpc-cross-arm/Containerfile) and export binaries using `--output type=local`:
+```bash
+# Podman build (armhf)
+podman build -o type=local,dest=./bin .
+
+# Podman build (aarch64)
+podman build --build-arg GNU_HOST=aarch64-linux-gnu -o type=local,dest=./bin/aarch64 .
+
+# Buildah build
+buildah build --output type=local,dest=./bin .
+```
+
 ### Verifying Binaries with QEMU (Linux/CI)
 When cross-compiling for 32-bit ARM (`arm-linux-gnueabihf`):
 ```bash
