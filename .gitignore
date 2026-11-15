@@ -12,12 +12,9 @@ Icon
 ## Thumbnails
 ._*
 
-# VSC
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# IDE & Editors
+.vscode/
+.idea/
 *.code-workspace
 
 # Direnv https://direnv.net/

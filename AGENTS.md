@@ -22,6 +22,7 @@ The repository compiles a simple client-server Greeter application defined in [s
 
 ```
 .
+├── .clang-format              # Code formatting guidelines (Google style, C++/Proto)
 ├── .editorconfig              # Code formatting guidelines (2-space indent, UTF-8)
 ├── .github/
 │   └── workflows/
@@ -120,7 +121,8 @@ kill $SERVER_PID 2>/dev/null || true
 
 ## 5. Coding Standards & Conventions
 
-- **EditorConfig**: 2-space indentation, trimmed trailing whitespace, newline at EOF.
+- **ClangFormat**: Google C++ style, 2-space indentation (see `.clang-format`).
+- **EditorConfig**: 2-space indentation, trimmed trailing whitespace, newline at EOF (see `.editorconfig`).
 - **CMake**: Target-oriented CMake. Use `target_link_libraries`, `target_include_directories`, and `set(CMAKE_CXX_STANDARD 17)` rather than manually manipulating compiler flag strings.
 - **C++**: Modern C++ (C++17). Follow standard C++ naming and RAII resource management.
 - **Git Hygiene & Commits**:
