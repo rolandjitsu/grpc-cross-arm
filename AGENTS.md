@@ -118,9 +118,11 @@ kill $SERVER_PID 2>/dev/null || true
 - **EditorConfig**: 2-space indentation, trimmed trailing whitespace, newline at EOF.
 - **CMake**: Target-oriented CMake. Use `target_link_libraries`, `target_include_directories`, and `set(CMAKE_CXX_STANDARD 17)` rather than manually manipulating compiler flag strings.
 - **C++**: Modern C++ (C++17). Follow standard C++ naming and RAII resource management.
-- **Git Hygiene**:
+- **Git Hygiene & Commits**:
   - Never commit build artifacts (`hello_server`, `hello_client`) to `bin/`. Only `bin/.gitkeep` should be tracked.
-  - Keep commit messages descriptive following conventional commit style (`feat:`, `fix:`, `chore:`, `ci:`, `docs:`).
+  - Conventional Commits, subject in imperative present tense: `feat:`, `fix:`, `chore:`, `ci:`, `docs:`, `build:`.
+  - Keep the commit body minimal, or omit it. Add a body only for non-obvious *why* or trade-offs. Never restate the diff.
+  - Disclose AI with an `Assisted-by: <Provider>:<model-id>` trailer (e.g. `Assisted-by: Antigravity:gemini-3.8-flash` or `Assisted-by: Claude:claude-opus-4-8`), following the Linux kernel AI-assistants guide format. Never `Co-Authored-By`, and never add a human `Signed-off-by`.
 
 ---
 
