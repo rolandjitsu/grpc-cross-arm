@@ -7,6 +7,21 @@ on:
     types: [opened, synchronize]
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check C++ and Proto formatting
+        run: |
+          sudo apt-get update && \
+          sudo apt-get install -y --no-install-recommends clang-format
+          clang-format --dry-run --Werror src/*.cc src/*.proto
+
+      - name: Check Markdown and JSON formatting
+        uses: dprint/check@v2.2
+
   test:
     runs-on: ubuntu-24.04
     strategy:

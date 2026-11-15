@@ -1,0 +1,17 @@
+{
+  "markdown": {
+    "textWrap": "maintain"
+  },
+  "includes": [
+    "**/*.md",
+    "**/*.json"
+  ],
+  "excludes": [
+    "**/node_modules",
+    "bin"
+  ],
+  "plugins": [
+    "https://plugins.dprint.dev/markdown-0.17.8.wasm",
+    "https://plugins.dprint.dev/json-0.19.4.wasm"
+  ]
+}

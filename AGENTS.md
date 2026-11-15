@@ -11,6 +11,7 @@ This repository demonstrates how to cross-compile a C++ [gRPC](https://grpc.io/)
 The repository compiles a simple client-server Greeter application defined in [src/hello.proto](file:///Users/roland.groza/Work/grpc-cross-arm/src/hello.proto) into ARM binaries (`bin/hello_server` and `bin/hello_client`).
 
 ### Key Technologies
+
 - **Docker & Docker Buildx**: Multi-stage container builds exporting local binaries via `scratch`.
 - **CMake**: Build automation and cross-compilation toolchain management.
 - **gRPC & Protocol Buffers**: RPC framework and code generators (`protoc`, `grpc_cpp_plugin`).
@@ -47,6 +48,7 @@ The repository compiles a simple client-server Greeter application defined in [s
 ## 3. Architecture & Build Pipeline
 
 Cross-compiling gRPC in C++ requires a two-step compilation approach:
+
 1. **Host Build**: gRPC code generators (`protoc` and `grpc_cpp_plugin`) must be compiled natively for the host architecture (`x86_64`) so they can execute during the build to generate C++ protobuf and gRPC stub files (`hello.pb.cc`, `hello.grpc.pb.cc`).
 2. **Target Cross Build**: gRPC libraries, Abseil, and runtime dependencies are compiled using the cross-toolchain (e.g. `arm-linux-gnueabihf-gcc` / `g++` or `aarch64-linux-gnu-gcc` / `g++`) and staged in a sysroot prefix (`CROSS_STAGING_PREFIX`).
 3. **Application Build**: The application CMake build loads target libraries from the staging prefix while executing host `protoc` and `grpc_cpp_plugin` to produce the final ARM executables.
@@ -57,6 +59,7 @@ Cross-compiling gRPC in C++ requires a two-step compilation approach:
 ## 4. Common Commands & Workflows
 
 ### Building with Docker Buildx Bake (Recommended)
+
 ```bash
 # Default build (armhf binaries into ./bin)
 docker buildx bake
@@ -80,6 +83,7 @@ CACHE=/tmp/grpc-cross-cache docker buildx bake
 ```
 
 ### Building with Docker Buildx directly
+
 ```bash
 # Standard build exporting to ./bin
 docker buildx build -f Dockerfile -o type=local,dest=./bin .
@@ -89,7 +93,9 @@ docker buildx build --no-cache -f Dockerfile -o type=local,dest=./bin .
 ```
 
 ### Building with Podman or Buildah
+
 Podman and Buildah use [Containerfile](file:///Users/roland.groza/Work/grpc-cross-arm/Containerfile) and export binaries using `--output type=local`:
+
 ```bash
 # Podman build (armhf)
 podman build -o type=local,dest=./bin .
@@ -102,7 +108,9 @@ buildah build --output type=local,dest=./bin .
 ```
 
 ### Verifying Binaries with QEMU (Linux/CI)
+
 When cross-compiling for 32-bit ARM (`arm-linux-gnueabihf`):
+
 ```bash
 # Start server in background
 qemu-arm -L /usr/arm-linux-gnueabihf/ ./bin/hello_server &
@@ -128,7 +136,7 @@ kill $SERVER_PID 2>/dev/null || true
 - **Git Hygiene & Commits**:
   - Never commit build artifacts (`hello_server`, `hello_client`) to `bin/`. Only `bin/.gitkeep` should be tracked.
   - Conventional Commits, subject in imperative present tense: `feat:`, `fix:`, `chore:`, `ci:`, `docs:`, `build:`.
-  - Keep the commit body minimal, or omit it. Add a body only for non-obvious *why* or trade-offs. Never restate the diff.
+  - Keep the commit body minimal, or omit it. Add a body only for non-obvious _why_ or trade-offs. Never restate the diff.
   - Disclose AI with an `Assisted-by: <Provider>:<model-id>` trailer (e.g. `Assisted-by: Antigravity:gemini-3.8-flash` or `Assisted-by: Claude:claude-opus-4-8`), following the Linux kernel AI-assistants guide format. Never `Co-Authored-By`, and never add a human `Signed-off-by`.
 
 ---
