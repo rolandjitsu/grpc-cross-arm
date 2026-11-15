@@ -69,6 +69,11 @@ docker buildx bake aarch64
 # Build both armhf and aarch64 in parallel
 docker buildx bake all
 
+# Build legacy gRPC v1.37.1 on Debian Bullseye
+docker buildx bake legacy-armhf
+docker buildx bake legacy-aarch64
+docker buildx bake legacy
+
 # Build with custom cache destination
 CACHE=/tmp/grpc-cross-cache docker buildx bake
 ```

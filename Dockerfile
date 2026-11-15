@@ -56,6 +56,16 @@ RUN GRPC_DIR=/grpc && \
     -DgRPC_SSL_PROVIDER=package \
     ../.. && \
   make -j`nproc` install && \
+  # If Abseil CMake configs were not installed by gRPC (e.g. gRPC v1.37.1), build & install Abseil host
+  if [ ! -f /usr/local/lib/cmake/absl/abslConfig.cmake ] && [ -d "$GRPC_DIR/third_party/abseil-cpp" ]; then \
+    ABSEIL_BUILD_DIR=$GRPC_DIR/third_party/abseil-cpp/cmake/build && \
+    mkdir -p $ABSEIL_BUILD_DIR && \
+    cd $ABSEIL_BUILD_DIR && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
+      ../.. && \
+    make -j`nproc` install; \
+  fi && \
   # gRPC cross
   GRPC_CROSS_BUILD_DIR=$GRPC_DIR/cmake/cross_build && \
   mkdir -p $GRPC_CROSS_BUILD_DIR && \
@@ -68,6 +78,18 @@ RUN GRPC_DIR=/grpc && \
     -DgRPC_BUILD_TESTS=OFF \
     ../.. && \
   make -j`nproc` install && \
+  # If Abseil CMake configs were not installed by gRPC (e.g. gRPC v1.37.1), build & install Abseil cross
+  if [ ! -f "$CROSS_STAGING_PREFIX/lib/cmake/absl/abslConfig.cmake" ] && [ -d "$GRPC_DIR/third_party/abseil-cpp" ]; then \
+    ABSEIL_BUILD_DIR=$GRPC_DIR/third_party/abseil-cpp/cmake/build_cross && \
+    mkdir -p $ABSEIL_BUILD_DIR && \
+    cd $ABSEIL_BUILD_DIR && \
+    cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
+      ../.. && \
+    make -j`nproc` install; \
+  fi && \
   cd / && \
   rm -rf $GRPC_DIR
 

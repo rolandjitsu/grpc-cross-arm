@@ -9,6 +9,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: latest
+            debian_version: bookworm-slim
+            grpc_version: v1.66.2
+          - name: legacy
+            debian_version: bullseye-slim
+            grpc_version: v1.37.1
+    name: test (${{ matrix.name }})
     steps:
       - name: Setup deps
         run: |
@@ -29,15 +40,18 @@ jobs:
           cache-name: docker-cache
         with:
           path: /tmp/cache
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('src/*', 'Dockerfile') }}
+          key: ${{ runner.os }}-${{ matrix.name }}-${{ env.cache-name }}-${{ hashFiles('src/*', 'Dockerfile') }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.cache-name }}-
-            ${{ runner.os }}-
+            ${{ runner.os }}-${{ matrix.name }}-${{ env.cache-name }}-
+            ${{ runner.os }}-${{ matrix.name }}-
 
       - name: Compile the binaries
         env:
           BUILDX_BAKE_ENTITLEMENTS_FS: "0"
-        run: CACHE=/tmp/cache docker buildx bake --allow=fs=/tmp
+          DEBIAN_VERSION: ${{ matrix.debian_version }}
+          GRPC_VERSION: ${{ matrix.grpc_version }}
+          CACHE: /tmp/cache
+        run: docker buildx bake --allow=fs=/tmp
 
       # NOTE: Target binaries require target glibc <= runner sysroot glibc.
       - name: Verify the binaries
