@@ -35,7 +35,9 @@ jobs:
             ${{ runner.os }}-
 
       - name: Compile the binaries
-        run: CACHE=/tmp/cache docker buildx bake
+        env:
+          BUILDX_BAKE_ENTITLEMENTS_FS: "0"
+        run: CACHE=/tmp/cache docker buildx bake --allow=fs=/tmp
 
       # NOTE: Target binaries require target glibc <= runner sysroot glibc.
       - name: Verify the binaries

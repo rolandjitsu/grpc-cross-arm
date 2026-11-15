@@ -3,7 +3,15 @@ variable "DEST" {
 }
 
 variable "CACHE" {
-  default = "/tmp/grpc-cross-cache"
+  default = "./tmp/cache"
+}
+
+group "default" {
+  targets = ["default"]
+}
+
+group "all" {
+  targets = ["armhf", "aarch64"]
 }
 
 target "_base" {
@@ -39,8 +47,4 @@ target "aarch64" {
   args = {
     GNU_HOST = "aarch64-linux-gnu"
   }
-}
-
-group "all" {
-  targets = ["armhf", "aarch64"]
 }
