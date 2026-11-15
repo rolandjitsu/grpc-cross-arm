@@ -57,8 +57,17 @@ Cross-compiling gRPC in C++ requires a two-step compilation approach:
 
 ### Building with Docker Buildx Bake (Recommended)
 ```bash
-# Build binaries into ./bin using bake
+# Default build (armhf binaries into ./bin)
 docker buildx bake
+
+# Build for 32-bit ARM (output to ./bin/armhf)
+docker buildx bake armhf
+
+# Build for 64-bit ARM (output to ./bin/aarch64)
+docker buildx bake aarch64
+
+# Build both armhf and aarch64 in parallel
+docker buildx bake all
 
 # Build with custom cache destination
 CACHE=/tmp/grpc-cross-cache docker buildx bake

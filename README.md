@@ -35,10 +35,18 @@ docker buildx build -f Dockerfile -o type=local,dest=./bin .
 To simplify the build command and make use of caching, you can use [buildx bake](https://docs.docker.com/build/bake/):
 
 ```bash
+# Default build (32-bit ARM, output to ./bin)
 docker buildx bake
-```
 
-Compiled binaries (`hello_server` and `hello_client`) will be exported to `./bin`.
+# Target 32-bit ARM specifically (output to ./bin/armhf)
+docker buildx bake armhf
+
+# Target 64-bit ARM (output to ./bin/aarch64)
+docker buildx bake aarch64
+
+# Build both architectures in parallel
+docker buildx bake all
+```
 
 ## Learning Material
 * [Docker Buildx](https://docs.docker.com/buildx/working-with-buildx/)
