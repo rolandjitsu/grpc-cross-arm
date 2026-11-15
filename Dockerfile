@@ -65,6 +65,7 @@ RUN GRPC_DIR=/grpc && \
     mkdir -p $ABSEIL_BUILD_DIR && \
     cd $ABSEIL_BUILD_DIR && \
     cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
       ../.. && \
     make -j`nproc` install; \
@@ -88,6 +89,7 @@ RUN GRPC_DIR=/grpc && \
     cd $ABSEIL_BUILD_DIR && \
     cmake -DCMAKE_TOOLCHAIN_FILE=$CMAKE_CROSS_TOOLCHAIN \
       -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_INSTALL_PREFIX=$CROSS_STAGING_PREFIX \
       -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE \
       ../.. && \
